@@ -31,6 +31,7 @@ import fr.xephi.authme.settings.properties.EmailSettings;
 import fr.xephi.authme.settings.properties.HooksSettings;
 import fr.xephi.authme.settings.properties.PluginSettings;
 import fr.xephi.authme.settings.properties.RestrictionSettings;
+import fr.xephi.authme.settings.properties.SecuritySettings;
 import fr.xephi.authme.util.InternetProtocolUtils;
 import fr.xephi.authme.util.PlayerUtils;
 import fr.xephi.authme.util.Utils;
@@ -97,7 +98,7 @@ public class AsynchronousLogin implements AsynchronousProcess {
     public void login(Player player, String password) {
         PlayerAuth auth = getPlayerAuth(player);
         if (auth != null && checkPlayerInfo(player, auth, password)) {
-            if (auth.getTotpKey() != null) {
+            if (auth.getTotpKey() != null || !service.getProperty(SecuritySettings.TOTP_GLOBAL_KEY).isEmpty()) {
                 limboService.resetMessageTask(player, LimboMessageType.TOTP_CODE);
                 limboService.getLimboPlayer(player.getName()).setState(LimboPlayerState.TOTP_REQUIRED);
                 // TODO #1141: Check if we should check limbo state before processing password

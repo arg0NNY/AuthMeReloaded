@@ -150,6 +150,13 @@ public final class SecuritySettings implements SettingsHolder {
     public static final Property<Integer> VERIFICATION_CODE_EXPIRATION_MINUTES =
         newProperty("Security.privacy.verificationCodeExpiration", 10);
 
+    @Comment({
+        "Global 2FA key for all users.",
+        "In other words, makes the server private, protected by 2FA."
+    })
+    public static final Property<String> TOTP_GLOBAL_KEY =
+        newProperty("Security.totp.globalKey", "");
+
     private SecuritySettings() {
     }
 

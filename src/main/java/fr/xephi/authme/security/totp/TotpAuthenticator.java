@@ -11,6 +11,7 @@ import fr.xephi.authme.data.auth.PlayerAuth;
 import fr.xephi.authme.initialization.HasCleanup;
 import fr.xephi.authme.settings.Settings;
 import fr.xephi.authme.settings.properties.PluginSettings;
+import fr.xephi.authme.settings.properties.SecuritySettings;
 import org.bukkit.entity.Player;
 
 import javax.inject.Inject;
@@ -44,7 +45,8 @@ public class TotpAuthenticator implements HasCleanup {
     }
 
     public boolean checkCode(PlayerAuth auth, String totpCode) {
-        return checkCode(auth.getNickname(), auth.getTotpKey(), totpCode);
+        String totpGlobalKey = settings.getProperty(SecuritySettings.TOTP_GLOBAL_KEY);
+        return checkCode(auth.getNickname(), totpGlobalKey == null || totpGlobalKey.isEmpty() ? auth.getTotpKey() : totpGlobalKey, totpCode);
     }
 
     /**
