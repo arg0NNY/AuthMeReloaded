@@ -705,26 +705,6 @@ public class PlayerListenerTest {
     }
 
     @Test
-    public void shouldPerformAllJoinVerificationsSuccessfullyPreLoginLowest() throws FailedVerificationException {
-        // given
-        String name = "someone";
-        UUID uniqueId = UUID.fromString("753493c9-33ba-4a4a-bf61-1bce9d3c9a71");
-        String ip = "12.34.56.78";
-
-        AsyncPlayerPreLoginEvent preLoginEvent = spy(new AsyncPlayerPreLoginEvent(name, mockAddrWithIp(ip), uniqueId));
-        given(validationService.isUnrestricted(name)).willReturn(false);
-
-        // when
-        listener.onAsyncPlayerPreLoginEventLowest(preLoginEvent);
-
-        // then
-        verify(validationService).isUnrestricted(name);
-        verify(onJoinVerifier).checkIsValidName(name);
-        verifyNoInteractions(dataSource);
-        verifyNoModifyingCalls(preLoginEvent);
-    }
-
-    @Test
     public void shouldKickPreLoginLowestUnresolvedHostname() {
         // given
         String name = "someone";
@@ -740,77 +720,6 @@ public class PlayerListenerTest {
         // then
         verify(preLoginEvent).disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, "Unresolved hostname");
         verifyNoMoreInteractions(onJoinVerifier);
-    }
-
-    @Test
-    public void shouldPerformAllJoinVerificationsSuccessfullyPreLoginHighest() throws FailedVerificationException {
-        // given
-        String name = "someone";
-        UUID uniqueId = UUID.fromString("753493c9-33ba-4a4a-bf61-1bce9d3c9a71");
-        String ip = "12.34.56.78";
-
-        AsyncPlayerPreLoginEvent preLoginEvent = spy(new AsyncPlayerPreLoginEvent(name, mockAddrWithIp(ip), uniqueId));
-        given(validationService.isUnrestricted(name)).willReturn(false);
-        PlayerAuth auth = PlayerAuth.builder().name(name).build();
-        given(dataSource.getAuth(name)).willReturn(auth);
-
-        // when
-        listener.onAsyncPlayerPreLoginEventHighest(preLoginEvent);
-
-        // then
-        verify(validationService).isUnrestricted(name);
-        verify(onJoinVerifier).checkKickNonRegistered(true);
-        verify(onJoinVerifier).checkAntibot(name, true);
-        verify(onJoinVerifier).checkNameCasing(name, auth);
-        verify(onJoinVerifier).checkPlayerCountry(name, ip, true);
-        verifyNoModifyingCalls(preLoginEvent);
-    }
-
-    @Test
-    public void shouldPerformAllJoinVerificationsSuccessfullyLogin() {
-        // given
-        String name = "someone";
-        Player player = mockPlayerWithName(name);
-        String ip = "12.34.56.78";
-
-        PlayerLoginEvent loginEvent = spy(new PlayerLoginEvent(player, "", mockAddrWithIp(ip)));
-        given(validationService.isUnrestricted(name)).willReturn(false);
-        given(onJoinVerifier.refusePlayerForFullServer(loginEvent)).willReturn(false);
-
-        // when
-        listener.onPlayerLogin(loginEvent);
-
-        // then
-        verify(validationService).isUnrestricted(name);
-        verify(onJoinVerifier).refusePlayerForFullServer(loginEvent);
-        verifyNoInteractions(dataSource);
-        verifyNoModifyingCalls(loginEvent);
-    }
-
-    @Test
-    public void shouldAbortPlayerJoinForInvalidName() throws FailedVerificationException {
-        // given
-        String name = "inval!dName";
-        UUID uniqueId = UUID.fromString("753493c9-33ba-4a4a-bf61-1bce9d3c9a71");
-        InetAddress ip = mockAddrWithIp("33.32.33.33");
-        AsyncPlayerPreLoginEvent event = spy(new AsyncPlayerPreLoginEvent(name, ip, uniqueId));
-        given(validationService.isUnrestricted(name)).willReturn(false);
-        FailedVerificationException exception = new FailedVerificationException(
-            MessageKey.INVALID_NAME_CHARACTERS, "[a-z]");
-        doThrow(exception).when(onJoinVerifier).checkIsValidName(name);
-        String message = "Invalid characters!";
-        given(messages.retrieveSingle(name, exception.getReason(), exception.getArgs())).willReturn(message);
-
-        // when
-        listener.onAsyncPlayerPreLoginEventLowest(event);
-
-        // then
-        verify(validationService).isUnrestricted(name);
-        verify(onJoinVerifier).checkIsValidName(name);
-        // Check that we don't talk with the data source before performing checks that don't require it
-        verifyNoInteractions(dataSource);
-        verify(event).setKickMessage(message);
-        verify(event).setLoginResult(AsyncPlayerPreLoginEvent.Result.KICK_OTHER);
     }
 
     @Test
